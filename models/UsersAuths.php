@@ -1,5 +1,5 @@
 <?php
-   class mUsers extends BD
+   class mUsersAuths extends BD
    {
 
        function __construct()
