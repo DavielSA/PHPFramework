@@ -10,6 +10,10 @@
         protected $TABLE = "";
         protected $DT = "";
         protected $Log;
+        protected $TableCreate="";
+
+        public $fcreated;
+        public $fupdated;
 
         /**
          * Constructor de la clase de manejo de BD
@@ -129,7 +133,7 @@
         {
             $ValueReturn = false;
             try {
-
+                $this->fupdate  = new DateTime();
                 //Mapeamos la entidad
                 $Campos = $this->GetFields();
 
@@ -181,6 +185,10 @@
         {
             $ValueReturn = NULL;
             try {
+                
+                $this->fcreated = new DateTime();
+                $this->fupdate  = new DateTime();
+
                 //Mapeamos la entidad
                 $Campos = $this->GetFields();
 
