@@ -1,9 +1,8 @@
-<?php
-    /**
-     *  Elements style bootstrap: https://bootswatch.com/cosmo/
-     * 
-     */
-?>
+<?php /**
+      *  Elements style bootstrap: https://bootswatch.com/cosmo/
+      * 
+      */ ?>
+<?php use phpframework\Routers\RouterClass; ?>
 <!DOCTYPE HTML>
 <html>
     <head>

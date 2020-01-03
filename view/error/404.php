@@ -1,3 +1,5 @@
+<?php use phpframework\Routers\RouterClass; ?>
+
 <!doctype html>
 <html lang="en">
 <head>
