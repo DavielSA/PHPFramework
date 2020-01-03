@@ -1,4 +1,5 @@
 <?php
+    use phpframework\Routers\RouterClass;
     /**
      *  Define URL router.
      *      PathUrl | Verb | Controller | Method
@@ -22,6 +23,7 @@
      */
 
     RouterClass::Add("/","GET","Home","Get");
+    RouterClass::Add("/login/register","POST","Login","Register");
 
 
     RouterClass::AddStyle("MyStyle","/view/style/css/style.css");
@@ -34,3 +36,6 @@
 
     //RouterClass::AddScript("MyJS","/view/style/js/javascript.js");
     
+
+    //Don't Remove
+    RouterClass::Dispatch();

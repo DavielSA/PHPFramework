@@ -1,5 +1,6 @@
 <?php
-
+    namespace phpframework\core;
+    
     class Logs {
 
         private $File;

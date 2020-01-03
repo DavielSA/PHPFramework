@@ -1,11 +1,13 @@
 <?php
-   class mUsers extends BD
-   {
+    namespace phpframework\models;
 
-       function __construct()
-       {
-           parent::__construct("phpframework", "users"); 
-           $this->TableCreate = "
+    class mUsers extends BD
+    {
+
+        function __construct()
+        {
+            parent::__construct("phpframework", "users"); 
+            $this->TableCreate = "
                 CREATE TABLE IF NOT EXISTS `users` (
                     `id` int(11) NOT NULL AUTO_INCREMENT,
                     `email` varchar(250) DEFAULT NULL,
@@ -21,54 +23,54 @@
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `email_UNIQUE` (`email`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-           ";
-           
-       }
+            ";
+            
+        }
 
-       /**
+        /**
         * pk
-        * type-int
+        * type-auto
         */
-       public $id;
+        public $id;
 
         /**
         * unique
-        * type-email-250
+        * type-string-250
         */
-       public $email;
+        public $email;
 
         /**
         * type-string-250
         */
-       public $name;
+        public $name;
 
         /**
         * type-string-500
         */
-       public $surnames;
+        public $surnames;
 
         /**
         * type-int
         */
-       public $role;
+        public $role=0;
 
         /**
         * type-string-800
         */
-       public $profile;
+        public $profile;
 
         /**
         * type-string-100
         */
-       public $hash;
+        public $hash;
 
         /**
         * type-string-100
         */
-       public $salt;
+        public $salt;
 
         /**
-        * type-string-boolean
+        * type-boolean
         */
-       public $conditions;
-   }
+        public $conditions;
+    }

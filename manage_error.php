@@ -1,4 +1,7 @@
 <?php
+    namespace phpframework\HttpError;
+    use ErrorException;
+        
     if (DEBUG) {
         ini_set('display_errors', 1);
         ini_set('display_startup_errors', 1);
@@ -9,39 +12,172 @@
         throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
     });
     
+    class HttpResponse 
+    {
+        private static $status=array(
+            200 => '200 OK',
+            400 => '400 Bad Request',
+            401 => '401 Unauthorized',
+            404 => '404 Not Found',
+            422 => 'Unprocessable Entity',
+            500 => '500 Internal Server Error'
+        );
+
+        /**
+         * Headers. method generics for add headers.
+         * 
+         * @param $code int. Number of code error http
+         * @param $pragma string. ContentType of headers
+         */
+        private static function Headers(int $code,string $pragma) : void
+        {
+            // clear the old headers
+            header_remove();
+            // set the actual code
+            http_response_code($code);
+            // set the header to make sure cache is forced
+            header("Cache-Control: no-transform,public,max-age=300,s-maxage=900");
+            
+            if (!empty($pragma))
+                header($pragma);
+
+            // ok, validation error, or failure
+            header('Status: '.self::$status[$code]);
+        }
+
+        /**
+         * IsAjax.  Detect origin request. If is ajax returna true or false
+         * @return bool
+         */
+        public static function IsAjax() : bool
+        {
+            if( 
+                !empty($_SERVER['HTTP_CONTENT_TYPE']) 
+                && strpos(strtolower($_SERVER['HTTP_CONTENT_TYPE']),'json')
+            ) 
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * setJsonHeaders. method for add headers.
+         * 
+         * @param $code int. Number of code error http
+         */
+        public static function SetJsonHeaders(int $code) :void
+        {
+            self::Headers($code,'Content-Type: application/json');
+        }
+
+        /**
+         * SetHTMLHeaders. method for add headers.
+         * 
+         * @param $code int. Number of code error http
+         */
+        public static function SetHTMLHeaders(int $code) :void
+        {
+            self::Headers($code,'Content-Type: text/html; charset=utf-8');
+        }
+
+        /**
+         * SetAnyHeaders. method for add headers.
+         * 
+         * @param $code int. Number of code error http
+         */
+        public static function SetAnyHeaders(int $code):void
+        {
+            self::Headers($code,'');
+        }
+
+        /**
+         * SetJsHeaders. method for add headers.
+         * 
+         * @param $code int. Number of code error http
+         */
+        public static function SetJsHeaders(int $code):void
+        {
+            self::Headers($code,'Content-Type: application/javascript');
+        }
+
+        /**
+         * SetCSsHeaders. method for add headers.
+         * 
+         * @param $code int. Number of code error http
+         */
+        public static function SetCSsHeaders(int $code):void
+        {
+            self::Headers($code,"Content-type: text/css");
+        }
+
+    }
+
     class HttpError {
-
-        public static function CSS($file){
-            header("Content-type: text/css");
-            include($file);
-        }
-
-        public static function JS($file){
-            header('Content-Type: application/javascript');
-            include($file);
-        }
         
-
-
         private static $_e404=_VIEW_."error/404.php";
-        public static function e404() {
-            include_once(self::$_e404);
+        
+        /**
+        * e404. This method set header for not found url or file.
+        * 
+        */
+        public static function e404():void 
+        {
+            if (HttpResponse::IsAjax()){
+                HttpResponse::SetJsonHeaders(404);
+                echo json_encode(array(
+                    'status' => false, // success or not?
+                    'message' => "404 Not Found"
+                ));
+            } else {
+                HttpResponse::SetHTMLHeaders(404);
+                include_once(self::$_e404);
+            }
         }
 
         private static $_e500=_VIEW_."error/500.php";
-        public static function e500($e=''){
+
+        /**
+        * e500. This method set header of error 500.
+        * @param $e any optional.
+        */
+        public static function e500($e='') : void
+        {
             ob_start();
             self::PrettyErrors($e);
             $Error = ob_get_clean();
-            include_once(self::$_e500);
+            if (HttpResponse::IsAjax()) {
+                $Error=str_replace("\n","<br>",$Error);
+                HttpResponse::SetJsonHeaders(500);
+                echo json_encode(array(
+                    'status' => false, // success or not?
+                    'message' => $Error
+                ));
+            } else {
+                HttpResponse::SetHTMLHeaders(500);
+                include_once(self::$_e500);
+            }            
         }
     
-        public static function e401($e=''){
-            header("HTTP/1.1 401 Unauthorized");
+        /**
+         * e401. This method set header of unautorized user.
+         * @param $e any optional.
+         */
+        public static function e401($e='') : void
+        {
+            if ( HttpResponse::IsAjax())
+                HttpResponse::SetJsonHeaders(401);
+            else 
+                HttpResponse::SetHTMLHeaders(401);
             exit;
         }
 
-        private static function PrettyErrors($e='') {
+        /**
+         * Method for print pretty errors.
+         * @param $e any optional. Exception to parser
+         */
+        private static function PrettyErrors($e='') : void
+        {
             $args = func_get_args();
 
             $backtrace = debug_backtrace();
@@ -81,7 +217,9 @@
             foreach ($args as $k => $arg) {
                 if ($k > 0)
                     echo ",";
-                echo count($arg);
+                    
+                if (is_array($arg)) 
+                    echo count($arg);
             }
             echo "</div>";
         }

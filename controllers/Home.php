@@ -1,4 +1,5 @@
 <?php
+    namespace phpframework\Controllers;
 
     class Home extends Controllers {
 

@@ -1,4 +1,12 @@
 <?php
+    namespace phpframework\Routers;
+    use Exception;
+    use ReflectionClass;   
+
+    use phpframework\HttpError\HttpError;
+    use phpframework\HttpError\HttpResponse;
+    use phpframework\Routers\_Routers_;
+
     class RouterClass
     {
         /**
@@ -126,11 +134,11 @@
                 $IsJS = strpos($action,".js");
 
                 if ($IsStyle>0 ){
-                    HttpError::CSS($action);
+                    self::LoadCSS($action);
                     exit();
                 }
                 if ($IsJS>0){
-                    HttpError::JS($action);
+                    self::LoadJS($action);
                     exit();
                 }
 
@@ -156,6 +164,7 @@
                 } else if ( $ElementExistSecure ) {
                     $Headers = apache_request_headers();
                     $Token = $Headers['Authorization'];
+                    
                     if (isset($Token)){
                         HttpError::e401();
                     } else {
@@ -169,57 +178,64 @@
             }
         }
 
+        /**
+         * Method for load CSS file
+         * @param $file string. Path of CSS file to include.
+         */
+        private static function LoadCSS(string $file)
+        {
+            HttpResponse::SetCSsHeaders(
+                file_exists($file)
+                    ? 200
+                    : 404
+            );
+            include($file);
+        }
+
+        /**
+         * Method for load JS file
+         * @param $file string. Path of JS file to include.
+         */
+        private static function LoadJS($file)
+        {
+            HttpResponse::SetJsHeaders(
+                file_exists($file) 
+                    ? 200
+                    :404
+            );
+            include($file);
+        }
+
+        /**
+         * RunMethod. Method for execute controlled functions
+         * 
+         * @param $class string. Name of controllers class
+         * @param $method string. Name of method/function to execute in class
+         */
         private static function RunMethod($class,$method) 
         {
             $Reflect=null;
             $Instance=null;
-            if(version_compare(PHP_VERSION, '5.6.0', '>=')){
-                $Instance = new $class();
-                $Instance->$method();
+            $class="phpframework\Controllers\\".$class;
+
+            if (class_exists($class)){
+                if(version_compare(PHP_VERSION, '5.6.0', '>=')){
+                    $Instance = new $class();
+                    if (method_exists($Instance,$method))
+                        $Instance->$method();
+                    else 
+                        HttpError::e404();
+                } else {
+                    $Reflect  = new ReflectionClass($class);
+                    $Instance = $Reflect->newInstanceArgs();
+                    if (method_exists($Instance,$method))
+                        $Instance->$method();
+                    else 
+                        HttpError::e404();
+                }
             } else {
-                $Reflect  = new ReflectionClass($class);
-                $Instance = $Reflect->newInstanceArgs();
-                $Instance->$method();
+                HttpError::e404();
             }
         }
     }
 
-
-    class _Routers_ {
-        
-        public $Action;
-        public $Verb;
-        public $Controller;
-        public $Method;
-        public $Secure;
-        public $Role;
-
-        /**
-         * Register a new route
-         * 
-         * @param $action string
-         * @param $verb string 
-         * @param $controler string Class of controller
-         * @param $method string method of controller to execute
-         */
-        public function __construct(string $action,string $verb, string $controler, string $method,bool $secure=false, int $role=0)
-        {
-            $this->Action       = $action;
-            $this->Verb         = strtolower($verb);
-            $this->Controller   = $controler;
-            $this->Method       = $method;
-            $this->Secure       = $secure;
-            $this->Role         = $role;
-            /**
-             * auth_token
-             *  token - hash - token_expired - expiredTime - createdToken
-             * 0 => Invitado
-             * 3 => Usuario Basico
-             * 4 => Jefe departamento
-             * 6 => Administración
-             * 7 => Root
-             */
-        }
-
-        
-    }
