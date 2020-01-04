@@ -1,5 +1,4 @@
 # Framework - PHP
-nodejs, mongodb, express, socket.io
 php, angular, mysql
 
 1. PrettyURL para nginx
